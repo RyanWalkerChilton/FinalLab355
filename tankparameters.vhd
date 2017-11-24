@@ -11,8 +11,6 @@ constant bullet_width : integer := 5;
 
 end package;
 
-
-
 package body tankparameters is
 
 end package body;

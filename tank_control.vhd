@@ -7,11 +7,13 @@ port(
 		clk			:in std_logic;
 		reset			:in std_logic;
 		start			:in std_logic;
+		direction		:in std_logic;
 		speed_one_code		:in std_logic_vector(23 downto 0);
 		speed_two_code		:in std_logic_vector(23 downto 0);
 		speed_three_code	:in std_logic_vector(23 downto 0);
 		keyboard_input		:in std_logic_vector(23 downto 0);
-		tank_position		:out integer
+		tank_position		:out integer;
+		tank_y			:out integer
 );
 end entity tank_control;
 
@@ -20,10 +22,11 @@ architecture fsm of tank_control is
 signal state : std_logic_vector(1 downto 0);
 signal next_state : std_logic_vector(1 downto 0);
 signal speed : integer;
-signal direction : std_logic := '0';
-signal next_direction : std_logic;
+signal xdirection : std_logic := '0';
+signal next_xdirection : std_logic;
 signal tank_current_pos : integer := 300;
 signal tank_next_pos : integer;
+
 
 begin
 --Process to Update tank's speed!
@@ -48,20 +51,25 @@ if (reset = '0') then
 	state <= "00";
 	tank_position <= 300;
 	tank_current_pos <= 300;
-	direction <= '0';
+	xdirection <= '0';
+	if (direction = '0') then
+	tank_y <= 0 + (tank_height/2);
+	else
+	tank_y <= 480 - (tank_height/2);
+	end if;
 elsif (rising_edge(clk)) then
 	--Update tank's upcoming position, checking for boundary violations
-	if (direction = '0') then
+	if (xdirection = '0') then
 		tank_next_pos <= tank_current_pos + speed;
-		if (tank_next_pos + (tank_width/2)>= 600) then
+		if (tank_next_pos + (tank_width/2)>= 640) then
 			tank_next_pos <= 570;
-			next_direction <= '1';
+			next_xdirection <= '1';
 		end if; 
-	elsif (direction = '1') then
+	elsif (xdirection = '1') then
 		tank_next_pos <= tank_current_pos - speed;
 		if (tank_next_pos - (tank_width/2)<= 0) then
 			tank_next_pos <= 30;
-			next_direction <= '0';
+			next_xdirection <= '0';
 		end if; 
 	end if;
 	--Update tank's next speed state.
@@ -76,7 +84,7 @@ elsif (rising_edge(clk)) then
 
 	--Apply the updates!
 	state <= next_state;
-	direction <= next_direction;
+	xdirection <= next_xdirection;
 	tank_current_pos <= tank_next_pos;
 	tank_position <= tank_current_pos;
 end if;

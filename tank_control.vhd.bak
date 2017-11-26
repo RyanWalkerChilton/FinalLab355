@@ -36,8 +36,6 @@ case state is
 		speed <= 2;
 	when "10" =>
 		speed <= 3;
-	when others =>
-		speed <= 1;
 end case;
 end process tankspeed;
 
